@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>待办事项列表</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
+</head>
+<body>
+  <div id="app">
+    <section class="hero is-dark">
+      <div class="hero-body">
+        <div class="container">
+          <h1 class="title">
+            待办事项列表
+          </h1>
+          <h2 class="subtitle">
+            今天的事情今天做，明天才有时间做更多的事情
+          </h2>
+          <h2 class="subtitle" id="subtitle2"></h2>
+        </div>
+      </div>
+    </section>
+    <div class="container is-widescreen" style="margin: 30px auto;">
+      <div class="columns">
+        <div class="column is-one-quarter">
+          <input type="text" placeholder="输入代办事项名称" class="input" id="input-add" style="margin-bottom: 0.2rem;">
+          <input type="text" placeholder="输入所需时间" class="input" id="input-time">
+        </div>
+        <div class="column is-one-quarter" style="margin-top: 1.5rem;">
+          <button class="button is-primary" id="btn-add">添加</button>
+        </div>
+      </div>
+    </div>
+    <div class="container is-widescreen" id="todos-wrap">
+      <nav class="panel">
+        <p class="panel-heading">
+          已完成
+        </p>
+        <div id="has-finish-wrap" class="panel-block columns is-multiline">
+          
+        </div>
+      </nav>
+      <nav class="panel">
+        <p class="panel-heading">
+          未完成
+        </p>
+        <div id="un-finish-wrap" class="panel-block columns is-multiline">
+          
+        </div>
+      </nav>
+    </div>
+  </div>
+  <script>
+    var todos = [
+      { id: 1, title: '吃饭', time: 1, hasFinished: true },
+      { id: 2, title: '睡觉', time: 8, hasFinished: false },
+      { id: 3, title: '写代码', time: 3, hasFinished: false }
+    ]
+    // 筛选出已完成和未完成并完成渲染
+    render()
+    function render () {
+      // 已完成的todos
+      var hasFinishedTodos = []
+      for (var i = 0; i < todos.length; i++) {
+        if (todos[i].hasFinished) hasFinishedTodos.push(todos[i])
+      }
+      // 未完成的todos
+      var unFinishedTodos = []
+      for (var i = 0; i < todos.length; i++) {
+        if (!todos[i].hasFinished) unFinishedTodos.push(todos[i])
+      }
+      // 未完成的总时间
+      var hours = 0
+      for (var i = 0; i < unFinishedTodos.length; i++) {
+        hours += unFinishedTodos[i].time
+      }
+      var hasFinishHTML = ''
+      for (var i = 0; i < hasFinishedTodos.length; i++) {
+        hasFinishHTML += '<div class="column is-one-quarter" data-id="${todo.id}">'+
+            '<div class="card">'+
+             '<header class="card-header">'+
+                '<p class="card-header-title">代办事项</p>'+
+                '<a href="#" class="card-header-icon" aria-label="more options">'+
+                  '<button class="delete" data-id="' + hasFinishedTodos[i].id + '"></button>'+
+                '</a>'+
+              '</header>'+
+              '<div class="card-content">'+
+                '<div class="content">'+
+                  hasFinishedTodos[i].title +
+                  '<i>'+ hasFinishedTodos[i].time + '</i>小时'+
+                '</div>'+
+              '</div>'+
+              '<footer class="card-footer">'+
+                '<a href="javascript:;" class="card-footer-item has-text-success">已完成</a>'+
+                '<a href="javascript:;" class="card-footer-item btn-toggle" data-id="' + hasFinishedTodos[i].id + '">切换为未完成</a>'+
+              '</footer>'+
+            '</div>'+
+          '</div>'
+      }
+      var unFinishHTML = ''
+      for (var i = 0; i < unFinishedTodos.length; i++) {
+        unFinishHTML += '<div class="column is-one-quarter" data-id="${todo.id}">'+
+            '<div class="card">'+
+             '<header class="card-header">'+
+                '<p class="card-header-title">待办事项</p>'+
+                '<a href="#" class="card-header-icon" aria-label="more options">'+
+                  '<button class="delete" data-id="' + unFinishedTodos[i].id + '"></button>'+
+                '</a>'+
+              '</header>'+
+              '<div class="card-content">'+
+                '<div class="content">'+
+                  unFinishedTodos[i].title +
+                  '<i>'+ unFinishedTodos[i].time + '</i>小时'+
+                '</div>'+
+              '</div>'+
+              '<footer class="card-footer">'+
+                '<a href="javascript:;" class="card-footer-item has-text-danger">未完成</a>'+
+                '<a href="javascript:;" class="card-footer-item btn-toggle" data-id="' + unFinishedTodos[i].id + '">切换为已完成</a>'+
+              '</footer>'+
+            '</div>'+
+          '</div>'
+      }
+      
+      document.querySelector('#has-finish-wrap').innerHTML = hasFinishHTML
+      document.querySelector('#un-finish-wrap').innerHTML = unFinishHTML
+      document.querySelector('#subtitle2').innerHTML =
+        unFinishedTodos.length === 0 ?
+          '恭喜你，事情都做完了' :
+          `未完成<b>${unFinishedTodos.length}</b>项，做完还需要<b>${hours}</b>小时`
+    }
+    // 切换完成状态和删除功能
+    editFinish()
+    function editFinish () {
+      document.querySelector('#todos-wrap').addEventListener('click', function (e) {
+        var arrClass = e.target.className.split(/\s+/)
+        if (arrClass.indexOf('btn-toggle') !== -1) {
+          // 切换完成状态
+          var id = Number(e.target.getAttribute('data-id'))
+          for (var i = 0; i < todos.length; i++) {
+            if (todos[i].id === id) todos[i].hasFinished = !todos[i].hasFinished
+          }
+        } else if (arrClass.indexOf('delete') !== -1) {
+          var id = Number(e.target.getAttribute('data-id'))
+          for (var i = 0; i < todos.length; i++) {
+            console.log(todos[i].id, id)
+            if (todos[i].id === id) {
+              todos.splice(i, 1)
+              i--
+            }
+          }
+        }
+        // 重新渲染
+        render()
+      })
+    }
+
+    document.querySelector('#btn-add').addEventListener('click', addTodo)
+    document.querySelector('#input-add').addEventListener('keyup', function (e) {
+      if (e.keyCode === 13) addTodo()
+    })
+    function addTodo () {
+      var title = document.querySelector('#input-add').value
+      var time = Number(document.querySelector('#input-time').value)
+      var todo = {
+        title: title,
+        time: time
+      }
+      // id不能重复，这里使用时间戳
+      todo.id = Date.now()
+      // 完成状态默认为未完成
+      todo.hasFinish = false
+      todos.push(todo)
+      document.querySelector('#input-add').value = document.querySelector('#input-time').value = ''
+      render()      
+    }
+  </script>
+</body>
+</html>
