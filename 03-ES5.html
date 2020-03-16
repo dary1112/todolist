@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>待办事项列表</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.8.0/css/bulma.min.css">
+</head>
+<body>
+  <div id="app">
+    <section class="hero is-dark">
+      <div class="hero-body">
+        <div class="container">
+          <h1 class="title">
+            待办事项列表
+          </h1>
+          <h2 class="subtitle">
+            今天的事情今天做，明天才有时间做更多的事情
+          </h2>
+          <h2 class="subtitle" id="subtitle2"></h2>
+        </div>
+      </div>
+    </section>
+    <div class="container is-widescreen" style="margin: 30px auto;">
+      <div class="columns">
+        <div class="column is-one-quarter">
+          <input type="text" placeholder="输入代办事项名称" class="input" id="input-title" style="margin-bottom: 0.2rem;">
+          <input type="text" placeholder="输入所需时间" class="input" id="input-time">
+        </div>
+        <div class="column is-one-quarter" style="margin-top: 1.5rem;">
+          <button class="button is-primary" id="btn-add">添加</button>
+        </div>
+      </div>
+    </div>
+    <div class="container is-widescreen" id="todos-wrap">
+      <nav class="panel">
+        <p class="panel-heading">
+          已完成
+        </p>
+        <div id="has-finished-wrap" class="panel-block columns is-multiline">
+          
+        </div>
+      </nav>
+      <nav class="panel">
+        <p class="panel-heading">
+          未完成
+        </p>
+        <div id="un-finish-wrap" class="panel-block columns is-multiline">
+          
+        </div>
+      </nav>
+    </div>
+  </div>
+  <script>
+    function TodoList () {
+      this.todos = [
+        { id: 1, title: '吃饭', time: 1, hasFinished: true },
+        { id: 2, title: '睡觉', time: 8, hasFinished: false },
+        { id: 3, title: '写代码', time: 3, hasFinished: false }
+      ]
+      this.wrapNode = document.querySelector('#todos-wrap')
+      this.hasFinishedWrapNode = document.querySelector('#has-finished-wrap')
+      this.unFinishWrapNode = document.querySelector('#un-finish-wrap')
+      this.subtitle2 = document.querySelector('#subtitle2')
+      this.inputTitle = document.querySelector('#input-title')
+      this.inputTime = document.querySelector('#input-time')
+      this.addBtn = document.querySelector('#btn-add')
+
+      this.render() // 默认渲染一次
+      this.toggleFinishStatus()
+      this.bindAddEvents()
+    }
+
+    // 渲染页面的方法
+    TodoList.prototype.render = function () {
+      this.hasFinishedTodos = [] // 所有已完成
+      this.unFinishedTodos = [] // 所有未完成
+      this.hours = 0 // 未完成所需总时间
+      this.hasFinishHTML = '' // 已完成的html字符串
+      this.unFinishHTML = ''// 未完成的html字符串
+
+      // 过滤出已完成和未完成的todo
+      this.hasFinishedTodos = this.todos.filter(function (todo) {
+        return todo.hasFinished
+      })
+      this.unFinishedTodos = this.todos.filter(function (todo) {
+        return !todo.hasFinished
+      })
+      // 计算未完成的总时间，使用reduce更方便
+      this.hours = this.unFinishedTodos.reduce(function (time, todo) {
+        return time + todo.time
+      }, 0)
+      // 使用reduce把所有已完成和未完成的html拼接起来
+      this.hasFinishedWrapNode.innerHTML = this.hasFinishedTodos.reduce(function (html, todo) {
+        return html + '<div class="column is-one-quarter" >'+
+            '<div class="card">'+
+             '<header class="card-header">'+
+                '<p class="card-header-title">代办事项</p>'+
+                '<a href="#" class="card-header-icon" aria-label="more options">'+
+                  '<button class="delete" data-id="' + todo.id + '"></button>'+
+                '</a>'+
+              '</header>'+
+              '<div class="card-content">'+
+                '<div class="content">'+
+                  todo.title +
+                  '<i>'+ todo.time + '</i>小时'+
+                '</div>'+
+              '</div>'+
+              '<footer class="card-footer">'+
+                '<a href="javascript:;" class="card-footer-item has-text-success">已完成</a>'+
+                '<a href="javascript:;" class="card-footer-item btn-toggle" data-id="' + todo.id + '">切换为未完成</a>'+
+              '</footer>'+
+            '</div>'+
+          '</div>'
+      }, '')
+      this.unFinishWrapNode.innerHTML = this.unFinishedTodos.reduce(function (html, todo) {
+        return html + '<div class="column is-one-quarter">'+
+            '<div class="card">'+
+             '<header class="card-header">'+
+                '<p class="card-header-title">待办事项</p>'+
+                '<a href="#" class="card-header-icon" aria-label="more options">'+
+                  '<button class="delete" data-id="' + todo.id + '"></button>'+
+                '</a>'+
+              '</header>'+
+              '<div class="card-content">'+
+                '<div class="content">'+
+                  todo.title +
+                  '<i>'+ todo.time + '</i>小时'+
+                '</div>'+
+              '</div>'+
+              '<footer class="card-footer">'+
+                '<a href="javascript:;" class="card-footer-item has-text-danger">未完成</a>'+
+                '<a href="javascript:;" class="card-footer-item btn-toggle" data-id="' + todo.id + '">切换为已完成</a>'+
+              '</footer>'+
+            '</div>'+
+          '</div>'
+      }, '')
+      this.isAllFinish = this.todos.every(todo => todo.hasFinished)
+      this.subtitle2.innerHTML =
+        this.isAllFinish ?
+          '恭喜你，事情都做完了' :
+          `未完成<b>${this.unFinishedTodos.length}</b>项，做完还需要<b>${this.hours}</b>小时`
+    }
+
+    // 切换完成状态
+    TodoList.prototype.toggleFinishStatus = function () {
+      this.wrapNode.addEventListener('click', function (e) {
+        if (Array.from(e.target.classList).includes('btn-toggle')) {
+          // 切换完成状态
+          var id = Number(e.target.getAttribute('data-id'))
+          this.todos = this.todos.map(function (todo) {
+            if (todo.id === id) todo.hasFinished = !todo.hasFinished
+            return todo
+          })
+        } else if (Array.from(e.target.classList).includes('delete')) {
+          var id = Number(e.target.getAttribute('data-id'))
+          this.todos = this.todos.filter(function (todo) {
+            return todo.id !== id
+          })
+        }
+        // 重新渲染
+        this.render()
+      }.bind(this))
+    }
+    
+    // 添加事项
+    TodoList.prototype.addTodo = function () {
+      var title = this.inputTitle.value
+      var time = Number(this.inputTime.value)
+      var todo = {
+        title: title,
+        time: time
+      }
+      todo = Object.assign({}, todo, {
+        id: Date.now(),
+        hasFinish: false
+      })
+      this.todos.push(todo)
+      this.inputTitle.value = this.inputTime.value = ''
+      this.render()
+    }
+    
+    // 绑定事件
+    TodoList.prototype.bindAddEvents = function () {
+      var _this = this
+      this.addBtn.addEventListener('click', this.addTodo.bind(this))
+      this.inputTime.addEventListener('keyup', function (e) {
+        if (e.keyCode === 13) _this.addTodo.call(_this)
+      })
+    }
+    var todolist = new TodoList()    
+    
+  </script>
+</body>
+</html>

@@ -25,7 +25,7 @@
     <div class="container is-widescreen" style="margin: 30px auto;">
       <div class="columns">
         <div class="column is-one-quarter">
-          <input type="text" placeholder="输入代办事项名称" class="input" id="input-add" style="margin-bottom: 0.2rem;">
+          <input type="text" placeholder="输入代办事项名称" class="input" id="input-title" style="margin-bottom: 0.2rem;">
           <input type="text" placeholder="输入所需时间" class="input" id="input-time">
         </div>
         <div class="column is-one-quarter" style="margin-top: 1.5rem;">
@@ -38,7 +38,7 @@
         <p class="panel-heading">
           已完成
         </p>
-        <div id="has-finish-wrap" class="panel-block columns is-multiline">
+        <div id="has-finished-wrap" class="panel-block columns is-multiline">
           
         </div>
       </nav>
@@ -78,7 +78,7 @@
       }
       var hasFinishHTML = ''
       for (var i = 0; i < hasFinishedTodos.length; i++) {
-        hasFinishHTML += '<div class="column is-one-quarter" data-id="${todo.id}">'+
+        hasFinishHTML += '<div class="column is-one-quarter">'+
             '<div class="card">'+
              '<header class="card-header">'+
                 '<p class="card-header-title">代办事项</p>'+
@@ -101,7 +101,7 @@
       }
       var unFinishHTML = ''
       for (var i = 0; i < unFinishedTodos.length; i++) {
-        unFinishHTML += '<div class="column is-one-quarter" data-id="${todo.id}">'+
+        unFinishHTML += '<div class="column is-one-quarter">'+
             '<div class="card">'+
              '<header class="card-header">'+
                 '<p class="card-header-title">待办事项</p>'+
@@ -123,7 +123,7 @@
           '</div>'
       }
       
-      document.querySelector('#has-finish-wrap').innerHTML = hasFinishHTML
+      document.querySelector('#has-finished-wrap').innerHTML = hasFinishHTML
       document.querySelector('#un-finish-wrap').innerHTML = unFinishHTML
       document.querySelector('#subtitle2').innerHTML =
         unFinishedTodos.length === 0 ?
@@ -157,11 +157,11 @@
     }
 
     document.querySelector('#btn-add').addEventListener('click', addTodo)
-    document.querySelector('#input-add').addEventListener('keyup', function (e) {
+    document.querySelector('#input-time').addEventListener('keyup', function (e) {
       if (e.keyCode === 13) addTodo()
     })
     function addTodo () {
-      var title = document.querySelector('#input-add').value
+      var title = document.querySelector('#input-title').value
       var time = Number(document.querySelector('#input-time').value)
       var todo = {
         title: title,
@@ -172,8 +172,8 @@
       // 完成状态默认为未完成
       todo.hasFinish = false
       todos.push(todo)
-      document.querySelector('#input-add').value = document.querySelector('#input-time').value = ''
-      render()      
+      document.querySelector('#input-title').value = document.querySelector('#input-time').value = ''
+      render()
     }
   </script>
 </body>

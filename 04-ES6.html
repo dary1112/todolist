@@ -25,7 +25,7 @@
     <div class="container is-widescreen" style="margin: 30px auto;">
       <div class="columns">
         <div class="column is-one-quarter">
-          <input type="text" placeholder="输入代办事项名称" class="input" id="input-add" style="margin-bottom: 0.2rem;">
+          <input type="text" placeholder="输入代办事项名称" class="input" id="input-title" style="margin-bottom: 0.2rem;">
           <input type="text" placeholder="输入所需时间" class="input" id="input-time">
         </div>
         <div class="column is-one-quarter" style="margin-top: 1.5rem;">
@@ -38,7 +38,7 @@
         <p class="panel-heading">
           已完成
         </p>
-        <div id="has-finish-wrap" class="panel-block columns is-multiline"></div>
+        <div id="has-finished-wrap" class="panel-block columns is-multiline"></div>
       </nav>
       <nav class="panel">
         <p class="panel-heading">
@@ -49,19 +49,31 @@
     </div>
   </div>
   <script>
-    var todos = [
-      { id: 1, title: '吃饭', time: 1, hasFinished: true },
-      { id: 2, title: '睡觉', time: 8, hasFinished: false },
-      { id: 3, title: '写代码', time: 3, hasFinished: false }
-    ]
-    // 筛选出已完成和未完成并完成渲染
-    render()
-    function render () {
-      var hasFinishedTodos = todos.filter(todo => todo.hasFinished)
-      var unFinishedTodos = todos.filter(todo => !todo.hasFinished)
-      var hours = unFinishedTodos.reduce((time, todo) => time + todo.time, 0)
-      document.querySelector('#has-finish-wrap').innerHTML = hasFinishedTodos.reduce((html, todo) => {
-        return html += `<div class="column is-one-quarter" data-id="${todo.id}">
+    class TodoList {
+      constructor () {
+        this.todos = [
+          { id: 1, title: '吃饭', time: 1, hasFinished: true },
+          { id: 2, title: '睡觉', time: 8, hasFinished: false },
+          { id: 3, title: '写代码', time: 3, hasFinished: false }
+        ]
+        this.wrapNode = document.querySelector('#todos-wrap')
+        this.hasFinishedWrapNode = document.querySelector('#has-finished-wrap')
+        this.unFinishWrapNode = document.querySelector('#un-finish-wrap')
+        this.subtitle2 = document.querySelector('#subtitle2')
+        this.inputTitle = document.querySelector('#input-title')
+        this.inputTime = document.querySelector('#input-time')
+        this.addBtn = document.querySelector('#btn-add')
+
+        this.render() // 默认渲染一次
+        this.editFinish()
+        this.bindAddEvents()
+      }
+      render () {
+        this.hasFinishedTodos = this.todos.filter(todo => todo.hasFinished)
+        this.unFinishedTodos = this.todos.filter(todo => !todo.hasFinished)
+        this.hours = this.unFinishedTodos.reduce((time, todo) => time + todo.time, 0)
+        this.hasFinishedWrapNode.innerHTML = this.hasFinishedTodos.reduce((html, todo) => {
+          return html += `<div class="column is-one-quarter" data-id="${todo.id}">
             <div class="card">
               <header class="card-header">
                 <p class="card-header-title">
@@ -91,8 +103,8 @@
             </div>
           </div>`
       }, '')
-      document.querySelector('#un-finish-wrap').innerHTML = unFinishedTodos.reduce((html, todo) => {
-        return html += `<div class="column is-one-quarter">
+        this.unFinishWrapNode.innerHTML = this.unFinishedTodos.reduce((html, todo) => {
+          return html += `<div class="column is-one-quarter">
             <div class="card">
               <header class="card-header">
                 <p class="card-header-title">
@@ -121,52 +133,53 @@
               </footer>
             </div>
           </div>`
-      }, '')
-      const isAllFinish = todos.every(todo => todo.hasFinished)
-      document.querySelector('#subtitle2').innerHTML =
-      isAllFinish ?
-          '恭喜你，事情都做完了' :
-          `未完成<b>${unFinishedTodos.length}</b>项，做完还需要<b>${hours}</b>小时`
-    }
-    // 切换完成状态和删除功能
-    editFinish()
-    function editFinish () {
-      document.querySelector('#todos-wrap').addEventListener('click', e => {
-        if (Array.from(e.target.classList).includes('btn-toggle')) {
-          var id = Number(e.target.getAttribute('data-id'))
-          todos = todos.map(todo => {
-            if (todo.id === id) todo.hasFinished = !todo.hasFinished
-            return todo
-          })
-          render()
-        } else if (Array.from(e.target.classList).includes('delete')) {
-          var id = Number(e.target.getAttribute('data-id'))
-          console.log(id)
-          todos = todos.filter(todo => todo.id !== id)
-          render()
-        }
-      })
-    }
-
-    document.querySelector('#btn-add').addEventListener('click', addTodo)
-    document.querySelector('#input-add').addEventListener('keyup', e => {
-      if (e.keyCode === 13) addTodo()
-    })
-    function addTodo () {
-      var todoTitle = document.querySelector('#input-add').value.trim()
-      var todoTime = Number(document.querySelector('#input-time').value.trim())
-      var todo = {
-        title,
-        time
+        }, '')
+        const isAllFinish = this.todos.every(todo => todo.hasFinished)
+        this.subtitle2.innerHTML =
+          isAllFinish ?
+            '恭喜你，事情都做完了' :
+            `未完成<b>${this.unFinishedTodos.length}</b>项，做完还需要<b>${this.hours}</b>小时`
       }
-      todos.push({
-        ...todo,
-        id: Date.now(),
-        hasFinished: false
-      })
-      document.querySelector('#input-add').value = document.querySelector('#input-time').value = ''
-      render() 
+      editFinish () {
+        this.wrapNode.addEventListener('click', e => {
+          if (Array.from(e.target.classList).includes('btn-toggle')) {
+            // 切换完成状态
+            var id = Number(e.target.getAttribute('data-id'))
+            this.todos = this.todos.map(todo => {
+              if (todo.id === id) todo.hasFinished = !todo.hasFinished
+              return todo
+            })
+          } else if (Array.from(e.target.classList).includes('delete')) {
+            var id = Number(e.target.getAttribute('data-id'))
+            this.todos = this.todos.filter(todo => todo.id !== id)
+          }
+          // 重新渲染
+          this.render()
+        })
+      }
+      addTodo () {
+        var title = this.inputTitle.value
+        var time = Number(this.inputTime.value)
+        var todo = {
+          title,
+          time
+        }
+        this.todos.push({
+          ...todo,
+          id: Date.now(),
+          hasFinished: false
+        })
+        this.inputTitle.value = this.inputTime.value = ''
+        this.render()
+      }
+      bindAddEvents = function () {
+        this.addBtn.addEventListener('click', this.addTodo.bind(this))
+        this.inputTitle.addEventListener('keyup', e => {
+          if (e.keyCode === 13) this.addTodo()
+        })
+      }
     }
+    new TodoList()
   </script>
 </body>
 </html>
