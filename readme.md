@@ -144,3 +144,41 @@ todos = todos.filter(function (todo) {
 })
 ```
 
+
+
+
+
+## 使用Object.defineProperty改造
+
+代码如下：
+
+```javascript
+var obj = {}
+Object.defineProperty(obj, 'todos', {
+    get () {
+        return todos
+    },
+    set (value) {
+        todos = value
+        // 每一次todos被修改都调用render方法
+        render()
+    }
+})
+```
+
+至此，我们把代码中的`todos`都改成`obj.todos`，并且只需要在页面初始调用一次`render()`，其他地方的渲染都会在`set`方法里直接运行，不需要每次调用。
+
+**这样我们就可以集中精力在我们的业务逻辑上而不用担心页面渲染了**
+
+但是，现在我们会发现一个问题，就是添加事项添加不上了，因为我们原本用的是
+
+```javascript
+todos.push(todo)
+```
+
+而`push`修改的是源数组，这样并不会触发`obj`的`set`方法，解决方案如下：
+
+```javascript
+obj.todos = obj.todos.concat([todo])
+```
+
