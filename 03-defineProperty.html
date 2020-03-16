@@ -53,12 +53,38 @@
     </div>
   </div>
   <script>
+    var obj = {}
+    Object.defineProperty(obj, 'todos', {
+      get () {
+        return todos
+      },
+      set (value) {
+        todos = value
+        render()
+      }
+    })
     var todos = [
       { id: 1, title: '吃饭', time: 1, hasFinished: true },
       { id: 2, title: '睡觉', time: 8, hasFinished: false },
       { id: 3, title: '写代码', time: 3, hasFinished: false }
     ]
-    var template = `<div class="column is-one-quarter" data-id="${todo.id}">
+    // 筛选出已完成和未完成并完成渲染
+    render()
+    function render () {
+      // 过滤出已完成和未完成的todo
+      var hasFinishedTodos = todos.filter(function (todo) {
+        return todo.hasFinished
+      })
+      var unFinishedTodos = todos.filter(function (todo) {
+        return !todo.hasFinished
+      })
+      // 计算未完成的总时间，使用reduce更方便
+      var hours = unFinishedTodos.reduce(function (time, todo) {
+        return time + todo.time
+      }, 0)
+      // 使用reduce把所有已完成和未完成的html拼接起来
+      document.querySelector('#has-finish-wrap').innerHTML = hasFinishedTodos.reduce(function (html, todo) {
+        return html + `<div class="column is-one-quarter" data-id="${todo.id}">
             <div class="card">
               <header class="card-header">
                 <p class="card-header-title">
@@ -77,36 +103,47 @@
               <footer class="card-footer">
                 <a
                   href="javascript:;"
-                  class="card-footer-item ${todo.hasFinished ? 'has-text-success' : 'has-text-danger'}"
+                  class="card-footer-item has-text-success"
                 >
-                  ${todo.hasFinished ? '已完成' : '未完成'}
+                  已完成
                 </a>
                 <a href="javascript:;" class="card-footer-item btn-toggle" data-id="${todo.id}">
-                  切换为${todo.hasFinished ? '未完成' : '已完成'}
+                  切换为未完成
                 </a>
               </footer>
             </div>
           </div>`
-    // 筛选出已完成和未完成并完成渲染
-    render()
-    function render () {
-      // 过滤出已完成和未完成的todo
-      var hasFinishedTodos = todos.filter(function (todo) {
-        return todo.hasFinished
-      })
-      var unFinishedTodos = todos.filter(function (todo) {
-        return !todo.hasFinished
-      })
-      // 计算未完成的总时间，使用reduce更方便
-      var hours = unFinishedTodos.reduce(function (time, todo) {
-        return time + todo.time
-      }, 0)
-      // 使用reduce把所有已完成和未完成的html拼接起来
-      document.querySelector('#has-finish-wrap').innerHTML = hasFinishedTodos.reduce(function (html, todo) {
-        return html + template
       }, '')
       document.querySelector('#un-finish-wrap').innerHTML = unFinishedTodos.reduce(function (html, todo) {
-        return html + template
+        return html + `<div class="column is-one-quarter">
+            <div class="card">
+              <header class="card-header">
+                <p class="card-header-title">
+                  代办事项
+                </p>
+                <a href="#" class="card-header-icon" aria-label="more options">
+                  <button class="delete" data-id="${todo.id}"></button>
+                </a>
+              </header>
+              <div class="card-content">
+                <div class="content">
+                  ${todo.title}
+                  <i>${todo.time}</i>小时
+                </div>
+              </div>
+              <footer class="card-footer">
+                <a
+                  href="javascript:;"
+                  class="card-footer-item has-text-danger"
+                >
+                  未完成
+                </a>
+                <a href="javascript:;" class="card-footer-item btn-toggle" data-id="${todo.id}">
+                  切换为已完成
+                </a>
+              </footer>
+            </div>
+          </div>`
       }, '')
       const isAllFinish = todos.every(todo => todo.hasFinished)
       document.querySelector('#subtitle2').innerHTML =
@@ -124,18 +161,18 @@
         if (Array.from(e.target.classList).includes('btn-toggle')) {
           var id = Number(e.target.getAttribute('data-id'))
           // map修改数组
-          todos = todos.map(function (todo) {
+          obj.todos = obj.todos.map(function (todo) {
             if (todo.id === id) todo.hasFinished = !todo.hasFinished
             return todo
           })
-          render()
+          
         } else if (Array.from(e.target.classList).includes('delete')) {
           var id = Number(e.target.getAttribute('data-id'))
           // filter删除数组元素
-          todos = todos.filter(function (todo) {
+          obj.todos = obj.todos.filter(function (todo) {
             return todo.id !== id
           })
-          render()
+          
         }
       })
     }
@@ -155,9 +192,9 @@
       // id不能重复，这里使用时间戳，完成状态默认为未完成
       todo.id = Date.now()
       todo.hasFinish = false
-      todos.push(todo)
+      obj.todos = obj.todos.concat([todo])
       document.querySelector('#input-add').value = document.querySelector('#input-time').value = ''
-      render()      
+            
     }
     
     
