@@ -38,24 +38,28 @@
         <p class="panel-heading">
           已完成
         </p>
-        <div id="has-finished-wrap" class="panel-block columns is-multiline"></div>
+        <div id="has-finished-wrap" class="panel-block columns is-multiline">
+          
+        </div>
       </nav>
       <nav class="panel">
         <p class="panel-heading">
           未完成
         </p>
-        <div id="un-finish-wrap" class="panel-block columns is-multiline"></div>
+        <div id="un-finish-wrap" class="panel-block columns is-multiline">
+          
+        </div>
       </nav>
     </div>
   </div>
   <script>
+    var todos = [
+      { id: 1, title: '吃饭', time: 1, hasFinished: true },
+      { id: 2, title: '睡觉', time: 8, hasFinished: false },
+      { id: 3, title: '写代码', time: 3, hasFinished: false }
+    ]
     class TodoList {
       constructor () {
-        this.todos = [
-          { id: 1, title: '吃饭', time: 1, hasFinished: true },
-          { id: 2, title: '睡觉', time: 8, hasFinished: false },
-          { id: 3, title: '写代码', time: 3, hasFinished: false }
-        ]
         this.wrapNode = document.querySelector('#todos-wrap')
         this.hasFinishedWrapNode = document.querySelector('#has-finished-wrap')
         this.unFinishWrapNode = document.querySelector('#un-finish-wrap')
@@ -64,8 +68,8 @@
         this.inputTime = document.querySelector('#input-time')
         this.addBtn = document.querySelector('#btn-add')
 
-        this.render() // 默认渲染一次
-        this.editFinish()
+        // this.render() // 默认渲染一次
+        this.editTodos()
         this.bindAddEvents()
       }
       render () {
@@ -79,7 +83,7 @@
                 <p class="card-header-title">
                   代办事项
                 </p>
-                <a href="#" class="card-header-icon" aria-label="more options">
+                <a href="javascript:;" class="card-header-icon" aria-label="more options">
                   <button class="delete" data-id="${todo.id}"></button>
                 </a>
               </header>
@@ -110,7 +114,7 @@
                 <p class="card-header-title">
                   代办事项
                 </p>
-                <a href="#" class="card-header-icon" aria-label="more options">
+                <a href="javascript:;" class="card-header-icon" aria-label="more options">
                   <button class="delete" data-id="${todo.id}"></button>
                 </a>
               </header>
@@ -140,7 +144,7 @@
             '恭喜你，事情都做完了' :
             `未完成<b>${this.unFinishedTodos.length}</b>项，做完还需要<b>${this.hours}</b>小时`
       }
-      editFinish () {
+      editTodos () {
         this.wrapNode.addEventListener('click', e => {
           if (Array.from(e.target.classList).includes('btn-toggle')) {
             // 切换完成状态
@@ -153,8 +157,6 @@
             var id = Number(e.target.getAttribute('data-id'))
             this.todos = this.todos.filter(todo => todo.id !== id)
           }
-          // 重新渲染
-          this.render()
         })
       }
       addTodo () {
@@ -164,13 +166,15 @@
           title,
           time
         }
-        this.todos.push({
-          ...todo,
-          id: Date.now(),
-          hasFinished: false
-        })
+        this.todos = [
+          ...this.todos,
+          {
+            ...todo,
+            id: Date.now(),
+            hasFinished: false
+          }
+        ]
         this.inputTitle.value = this.inputTime.value = ''
-        this.render()
       }
       bindAddEvents = function () {
         this.addBtn.addEventListener('click', this.addTodo.bind(this))
@@ -179,7 +183,17 @@
         })
       }
     }
-    new TodoList()
+    const todolist = new TodoList()
+    Object.defineProperty(todolist, 'todos', {
+      get () {
+        return todos
+      },
+      set (value) {
+        todos = value
+        todolist.render()
+      }
+    }) 
+    todolist.todos = todos
   </script>
 </body>
 </html>

@@ -68,7 +68,7 @@
       this.addBtn = document.querySelector('#btn-add')
 
       this.render() // 默认渲染一次
-      this.toggleFinishStatus()
+      this.editTodos()
       this.bindAddEvents()
     }
 
@@ -97,7 +97,7 @@
             '<div class="card">'+
              '<header class="card-header">'+
                 '<p class="card-header-title">代办事项</p>'+
-                '<a href="#" class="card-header-icon" aria-label="more options">'+
+                '<a href="javascript:;" class="card-header-icon" aria-label="more options">'+
                   '<button class="delete" data-id="' + todo.id + '"></button>'+
                 '</a>'+
               '</header>'+
@@ -119,7 +119,7 @@
             '<div class="card">'+
              '<header class="card-header">'+
                 '<p class="card-header-title">待办事项</p>'+
-                '<a href="#" class="card-header-icon" aria-label="more options">'+
+                '<a href="javascript:;" class="card-header-icon" aria-label="more options">'+
                   '<button class="delete" data-id="' + todo.id + '"></button>'+
                 '</a>'+
               '</header>'+
@@ -140,11 +140,11 @@
       this.subtitle2.innerHTML =
         this.isAllFinish ?
           '恭喜你，事情都做完了' :
-          `未完成<b>${this.unFinishedTodos.length}</b>项，做完还需要<b>${this.hours}</b>小时`
+          '未完成<b>' + this.unFinishedTodos.length + '</b>项，做完还需要<b>' + this.hours + '</b>小时'
     }
 
     // 切换完成状态
-    TodoList.prototype.toggleFinishStatus = function () {
+    TodoList.prototype.editTodos = function () {
       this.wrapNode.addEventListener('click', function (e) {
         if (Array.from(e.target.classList).includes('btn-toggle')) {
           // 切换完成状态

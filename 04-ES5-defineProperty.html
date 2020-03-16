@@ -53,12 +53,12 @@
     </div>
   </div>
   <script>
+    var todos = [
+      { id: 1, title: '吃饭', time: 1, hasFinished: true },
+      { id: 2, title: '睡觉', time: 8, hasFinished: false },
+      { id: 3, title: '写代码', time: 3, hasFinished: false }
+    ]
     function TodoList () {
-      this.todos = [
-        { id: 1, title: '吃饭', time: 1, hasFinished: true },
-        { id: 2, title: '睡觉', time: 8, hasFinished: false },
-        { id: 3, title: '写代码', time: 3, hasFinished: false }
-      ]
       this.wrapNode = document.querySelector('#todos-wrap')
       this.hasFinishedWrapNode = document.querySelector('#has-finished-wrap')
       this.unFinishWrapNode = document.querySelector('#un-finish-wrap')
@@ -67,11 +67,10 @@
       this.inputTime = document.querySelector('#input-time')
       this.addBtn = document.querySelector('#btn-add')
 
-      this.render() // 默认渲染一次
       this.editTodos()
       this.bindAddEvents()
     }
-    
+
     // 渲染页面的方法
     TodoList.prototype.render = function () {
       this.hasFinishedTodos = [] // 所有已完成
@@ -79,95 +78,86 @@
       this.hours = 0 // 未完成所需总时间
       this.hasFinishHTML = '' // 已完成的html字符串
       this.unFinishHTML = ''// 未完成的html字符串
-      // 已完成的todos
-      for (var i = 0; i < this.todos.length; i++) {
-        if (this.todos[i].hasFinished) this.hasFinishedTodos.push(this.todos[i])
-      }
-      // 未完成的todos
-      for (var i = 0; i < this.todos.length; i++) {
-        if (!this.todos[i].hasFinished) this.unFinishedTodos.push(this.todos[i])
-      }
-      // 未完成的总时间
-      for (var i = 0; i < this.unFinishedTodos.length; i++) {
-        this.hours += this.unFinishedTodos[i].time
-      }
-      for (var i = 0; i < this.hasFinishedTodos.length; i++) {
-        this.hasFinishHTML += '<div class="column is-one-quarter" >'+
+
+      // 过滤出已完成和未完成的todo
+      this.hasFinishedTodos = this.todos.filter(function (todo) {
+        return todo.hasFinished
+      })
+      this.unFinishedTodos = this.todos.filter(function (todo) {
+        return !todo.hasFinished
+      })
+      // 计算未完成的总时间，使用reduce更方便
+      this.hours = this.unFinishedTodos.reduce(function (time, todo) {
+        return time + todo.time
+      }, 0)
+      // 使用reduce把所有已完成和未完成的html拼接起来
+      this.hasFinishedWrapNode.innerHTML = this.hasFinishedTodos.reduce(function (html, todo) {
+        return html + '<div class="column is-one-quarter" >'+
             '<div class="card">'+
              '<header class="card-header">'+
                 '<p class="card-header-title">代办事项</p>'+
                 '<a href="javascript:;" class="card-header-icon" aria-label="more options">'+
-                  '<button class="delete" data-id="' + this.hasFinishedTodos[i].id + '"></button>'+
+                  '<button class="delete" data-id="' + todo.id + '"></button>'+
                 '</a>'+
               '</header>'+
               '<div class="card-content">'+
                 '<div class="content">'+
-                  this.hasFinishedTodos[i].title +
-                  '<i>'+ this.hasFinishedTodos[i].time + '</i>小时'+
+                  todo.title +
+                  '<i>'+ todo.time + '</i>小时'+
                 '</div>'+
               '</div>'+
               '<footer class="card-footer">'+
                 '<a href="javascript:;" class="card-footer-item has-text-success">已完成</a>'+
-                '<a href="javascript:;" class="card-footer-item btn-toggle" data-id="' + this.hasFinishedTodos[i].id + '">切换为未完成</a>'+
+                '<a href="javascript:;" class="card-footer-item btn-toggle" data-id="' + todo.id + '">切换为未完成</a>'+
               '</footer>'+
             '</div>'+
           '</div>'
-      }
-      for (var i = 0; i < this.unFinishedTodos.length; i++) {
-        this.unFinishHTML += '<div class="column is-one-quarter">'+
+      }, '')
+      this.unFinishWrapNode.innerHTML = this.unFinishedTodos.reduce(function (html, todo) {
+        return html + '<div class="column is-one-quarter">'+
             '<div class="card">'+
              '<header class="card-header">'+
                 '<p class="card-header-title">待办事项</p>'+
                 '<a href="javascript:;" class="card-header-icon" aria-label="more options">'+
-                  '<button class="delete" data-id="' + this.unFinishedTodos[i].id + '"></button>'+
+                  '<button class="delete" data-id="' + todo.id + '"></button>'+
                 '</a>'+
               '</header>'+
               '<div class="card-content">'+
                 '<div class="content">'+
-                  this.unFinishedTodos[i].title +
-                  '<i>'+ this.unFinishedTodos[i].time + '</i>小时'+
+                  todo.title +
+                  '<i>'+ todo.time + '</i>小时'+
                 '</div>'+
               '</div>'+
               '<footer class="card-footer">'+
                 '<a href="javascript:;" class="card-footer-item has-text-danger">未完成</a>'+
-                '<a href="javascript:;" class="card-footer-item btn-toggle" data-id="' + this.unFinishedTodos[i].id + '">切换为已完成</a>'+
+                '<a href="javascript:;" class="card-footer-item btn-toggle" data-id="' + todo.id + '">切换为已完成</a>'+
               '</footer>'+
             '</div>'+
           '</div>'
-      }
-      
-      this.hasFinishedWrapNode.innerHTML = this.hasFinishHTML
-      this.unFinishWrapNode.innerHTML = this.unFinishHTML
+      }, '')
+      this.isAllFinish = this.todos.every(todo => todo.hasFinished)
       this.subtitle2.innerHTML =
-      this.unFinishedTodos.length === 0 ?
+        this.isAllFinish ?
           '恭喜你，事情都做完了' :
           '未完成<b>' + this.unFinishedTodos.length + '</b>项，做完还需要<b>' + this.hours + '</b>小时'
     }
 
     // 切换完成状态
     TodoList.prototype.editTodos = function () {
-      
       this.wrapNode.addEventListener('click', function (e) {
-        var arrClass = e.target.className.split(/\s+/)
-        if (arrClass.indexOf('btn-toggle') !== -1) {
+        if (Array.from(e.target.classList).includes('btn-toggle')) {
           // 切换完成状态
           var id = Number(e.target.getAttribute('data-id'))
-          for (var i = 0; i < this.todos.length; i++) {
-            if (this.todos[i].id === id) this.todos[i].hasFinished = !this.todos[i].hasFinished
-          }
-        } else if (arrClass.indexOf('delete') !== -1) {
+          this.todos = this.todos.map(function (todo) {
+            if (todo.id === id) todo.hasFinished = !todo.hasFinished
+            return todo
+          })
+        } else if (Array.from(e.target.classList).includes('delete')) {
           var id = Number(e.target.getAttribute('data-id'))
-          for (var i = 0; i < this.todos.length; i++) {
-            console.log(this.todos[i].id, id)
-            if (this.todos[i].id === id) {
-              this.todos.splice(i, 1)
-              i--
-            }
-          }
+          this.todos = this.todos.filter(function (todo) {
+            return todo.id !== id
+          })
         }
-        // 重新渲染
-        console.log(this.todos)
-        this.render()
       }.bind(this))
     }
     
@@ -179,13 +169,12 @@
         title: title,
         time: time
       }
-      // id不能重复，这里使用时间戳
-      todo.id = Date.now()
-      // 完成状态默认为未完成
-      todo.hasFinish = false
-      this.todos.push(todo)
+      todo = Object.assign({}, todo, {
+        id: Date.now(),
+        hasFinish: false
+      })
+      this.todos = this.todos.concat([todo])
       this.inputTitle.value = this.inputTime.value = ''
-      this.render()
     }
     
     // 绑定事件
@@ -196,7 +185,17 @@
         if (e.keyCode === 13) _this.addTodo.call(_this)
       })
     }
-    var todolist = new TodoList()
+    const todolist = new TodoList()
+    Object.defineProperty(todolist, 'todos', {
+      get () {
+        return todos
+      },
+      set (value) {
+        todos = value
+        todolist.render()
+      }
+    }) 
+    todolist.todos = todos
   </script>
 </body>
 </html>

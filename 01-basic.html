@@ -82,7 +82,7 @@
             '<div class="card">'+
              '<header class="card-header">'+
                 '<p class="card-header-title">代办事项</p>'+
-                '<a href="#" class="card-header-icon" aria-label="more options">'+
+                '<a href="javascript:;" class="card-header-icon" aria-label="more options">'+
                   '<button class="delete" data-id="' + hasFinishedTodos[i].id + '"></button>'+
                 '</a>'+
               '</header>'+
@@ -105,7 +105,7 @@
             '<div class="card">'+
              '<header class="card-header">'+
                 '<p class="card-header-title">待办事项</p>'+
-                '<a href="#" class="card-header-icon" aria-label="more options">'+
+                '<a href="javascript:;" class="card-header-icon" aria-label="more options">'+
                   '<button class="delete" data-id="' + unFinishedTodos[i].id + '"></button>'+
                 '</a>'+
               '</header>'+
@@ -128,11 +128,11 @@
       document.querySelector('#subtitle2').innerHTML =
         unFinishedTodos.length === 0 ?
           '恭喜你，事情都做完了' :
-          `未完成<b>${unFinishedTodos.length}</b>项，做完还需要<b>${hours}</b>小时`
+          '未完成<b>' + unFinishedTodos.length + '</b>项，做完还需要<b>' + hours + '</b>小时'
     }
     // 切换完成状态和删除功能
-    editFinish()
-    function editFinish () {
+    editTodos()
+    function editTodos () {
       document.querySelector('#todos-wrap').addEventListener('click', function (e) {
         var arrClass = e.target.className.split(/\s+/)
         if (arrClass.indexOf('btn-toggle') !== -1) {
