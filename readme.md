@@ -2,7 +2,7 @@
 
 *作者：Dary*
 
-## ES5数组API改造
+## ES6改造
 
 ### 一、首先，从所有的todos中筛选出已完成和未完成我们可以使用**filter**
 
@@ -23,12 +23,8 @@ for (var i = 0; i < todos.length; i++) {
 改造后：
 
 ```javascript
-var hasFinishedTodos = todos.filter(function (todo) {
-    return todo.hasFinished
-})
-var unFinishedTodos = todos.filter(function (todo) {
-    return !todo.hasFinished
-})
+var hasFinishedTodos = todos.filter(todo => todo.hasFinished)
+var unFinishedTodos = todos.filter(todo => !todo.hasFinished)
 ```
 
 
@@ -44,24 +40,24 @@ for (var i = 0; i < unFinishedTodos.length; i++) {
 }
 ```
 
-改造前：
+改造后：
 
 ```javascript
-var hours = unFinishedTodos.reduce(function (time, todo) {
-    return time + todo.time
-}, 0)
+var hours = unFinishedTodos.reduce((time, todo) => time + todo.time, 0)
 ```
 
 
 
 ### 三、循环数组拼接html字符串可以使用**reduce**
 
+### 四、使用模板字符串
+
 改造前：
 
 ```javascript
 var hasFinishHTML = ''
 for (var i = 0; i < hasFinishedTodos.length; i++) {
-    hasFinishHTML += '<div class="column is-one-quarter" data-id="${todo.id}">'+
+    hasFinishHTML += '<div class="column is-one-quarter" data-id="' + todo.id + '">'+
         '...'+
     '</div>'
 }
@@ -72,16 +68,19 @@ document.querySelector('#has-finish-wrap').innerHTML = hasFinishHTML
 
 ```javascript
 document.querySelector('#has-finish-wrap').innerHTML = 
-    hasFinishedTodos.reduce(function (html, todo) {
-    	return html + '<div class="column is-one-quarter" data-id="${todo.id}">'+
-        	'...'+
-    	'</div>'
+    hasFinishedTodos.reduce((html, todo) => {
+    	return html + 
+        `
+            <div class="column is-one-quarter" data-id="${todo.id}">
+            ...
+            </div>
+        `
 }, '')
 ```
 
 
 
-### 四、事件委托通过class判断事件源可以使用**Array.from**和**includes**配合
+### 五、事件委托通过class判断事件源可以使用**Array.from**和**includes**配合
 
 改造前：
 
@@ -102,7 +101,7 @@ if (Array.from(e.target.classList).includes('btn-toggle')) {
 
 
 
-### 五、切换完成状态修改数组可以使用**map**
+### 六、切换完成状态修改数组可以使用**map**
 
 改造前：
 
@@ -115,7 +114,7 @@ for (var i = 0; i < todos.length; i++) {
 改造后：
 
 ```javascript
-todos = todos.map(function (todo) {
+todos = todos.map(todo => {
     if (todo.id === id) todo.hasFinished = !todo.hasFinished
     return todo
 })
@@ -123,7 +122,7 @@ todos = todos.map(function (todo) {
 
 
 
-### 六、删除待办事项可以使用**filter**
+### 七、删除待办事项可以使用**filter**
 
 改造前：
 
@@ -139,9 +138,49 @@ for (var i = 0; i < todos.length; i++) {
 改造后：
 
 ```javascript
-todos = todos.filter(function (todo) {
-    return todo.id !== id
+todos = todos.filter(todo => todo.id !== id)
+```
+
+
+
+### 八、构造新增todo可以使用解构赋值
+
+```javascript
+var title = this.inputTitle.value
+var time = Number(this.inputTime.value)
+var todo = {
+	title,
+	time
+}
+```
+
+
+
+### 九、新增todo时使用扩展运算符
+
+```javascript
+this.todos.push({
+	...todo,
+	id: Date.now(),
+	hasFinished: false
 })
+```
+
+
+
+### 十、class改写面向对象
+
+```javascript
+class TodoList {
+    constructor () {
+        this.todos = todos
+        // ...
+    }
+    render () {
+        // ...
+    }
+    // ...
+}
 ```
 
 
@@ -180,5 +219,58 @@ todos.push(todo)
 
 ```javascript
 obj.todos = obj.todos.concat([todo])
+```
+
+
+
+## 使用数据劫持
+
+```javascript
+function observer(obj) {
+    if(typeof obj === 'object') {
+        for (let key in obj) {
+            // defineReactive 方法设置get和set
+            defineReactive(obj, key, obj[key])
+        }
+    }
+}
+
+function defineReactive(obj, key, value) {
+	// value 可能也是对象，递归劫持
+    observer(value)
+    
+    Object.defineProperty(obj, key, {
+        get () {
+            return value
+        },
+        set (val) {
+            console.log('数据更新了')
+            value = val
+            todolist.render()
+        }
+    })
+}
+```
+
+但是，如果对象是一个数组，Object.defineProperty就无法起作用了
+
+我们可以重写一下数组的方法
+
+```javascript
+let arr = ['push', 'slice', 'shift', 'unshift', 'splice']
+arr.forEach(method => {
+    let oldMethod = Array.prototype[method]
+    Array.prototype[method] = function (value) {
+        console.log('数据更新了')
+        oldMethod.call(this, value)
+        todolist.render()
+    }
+})
+```
+
+在最后，调用一下`observer`方法即可
+
+```javascript
+observer(todolist)
 ```
 
