@@ -4,7 +4,15 @@
 
 ## ES6改造
 
-### 一、首先，从所有的todos中筛选出已完成和未完成我们可以使用**filter**
+### 一、很多用到函数的地方只要不涉及this的问题都可以使用箭头函数
+
+
+
+### 二、定义变量和常量使用let和const
+
+
+
+### 三、从所有的todos中筛选出已完成和未完成我们可以使用**filter**
 
 改造前：
 
@@ -29,7 +37,7 @@ var unFinishedTodos = todos.filter(todo => !todo.hasFinished)
 
 
 
-### 二、计算未完成事项的总时间，可以使用**reduce**
+### 四、计算未完成事项的总时间，可以使用**reduce**
 
 改造前：
 
@@ -48,9 +56,9 @@ var hours = unFinishedTodos.reduce((time, todo) => time + todo.time, 0)
 
 
 
-### 三、循环数组拼接html字符串可以使用**reduce**
+### 五、循环数组拼接html字符串可以使用**reduce**
 
-### 四、使用模板字符串
+### 六、使用模板字符串
 
 改造前：
 
@@ -80,7 +88,7 @@ document.querySelector('#has-finish-wrap').innerHTML =
 
 
 
-### 五、事件委托通过class判断事件源可以使用**Array.from**和**includes**配合
+### 七、事件委托通过class判断事件源可以使用**Array.from**和**includes**配合
 
 改造前：
 
@@ -101,7 +109,7 @@ if (Array.from(e.target.classList).includes('btn-toggle')) {
 
 
 
-### 六、切换完成状态修改数组可以使用**map**
+### 八、切换完成状态修改数组可以使用**map**
 
 改造前：
 
@@ -122,7 +130,7 @@ todos = todos.map(todo => {
 
 
 
-### 七、删除待办事项可以使用**filter**
+### 九、删除待办事项可以使用**filter**
 
 改造前：
 
@@ -143,7 +151,15 @@ todos = todos.filter(todo => todo.id !== id)
 
 
 
-### 八、构造新增todo可以使用解构赋值
+### 十、判断是否全部已完成可以使用every
+
+```javascript
+const isAllFinish = this.todos.every(todo => todo.hasFinished)
+```
+
+
+
+### 构造新增todo可以使用解构赋值
 
 ```javascript
 var title = this.inputTitle.value
@@ -156,7 +172,7 @@ var todo = {
 
 
 
-### 九、新增todo时使用扩展运算符
+### 十一、新增todo时使用扩展运算符
 
 ```javascript
 this.todos.push({
@@ -168,7 +184,7 @@ this.todos.push({
 
 
 
-### 十、class改写面向对象
+### 十二、class改写面向对象
 
 ```javascript
 class TodoList {
